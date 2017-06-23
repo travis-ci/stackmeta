@@ -43,10 +43,14 @@ module Stackmeta
 
       return '' if item_a_bytes.empty? && item_b_bytes.empty?
 
-      diff_bytes(label: item, a: item_a_bytes, b: item_b_bytes)
+      diff_bytes(
+        label: item,
+        stack_a: stack_a, stack_b: stack_b,
+        a: item_a_bytes, b: item_b_bytes
+      )
     end
 
-    private def diff_bytes(label: '', a: '', b: '')
+    private def diff_bytes(label: '', stack_a: '', stack_b: '', a: '', b: '')
       tmp_a = Tempfile.new('stackmeta-diff-a')
       tmp_a.write(a)
       tmp_a.close
@@ -71,7 +75,10 @@ module Stackmeta
       process.poll_for_exit(30)
       tmpout.close
 
-      File.read(tmpout.path)
+      <<~EOF + File.read(tmpout.path)
+        diff a/#{label} b/#{label}
+        #{stack_a}..#{stack_b}
+      EOF
     end
   end
 end
