@@ -26,6 +26,19 @@ module Stackmeta
            :@requested_stack => params[:stack]
     end
 
+    get '/diff/:stack_a/:stack_b' do
+      diff = differ.diff_items(
+        items: Array(params[:item]),
+        stack_a: params[:stack_a],
+        stack_b: params[:stack_b]
+      )
+
+      json diff: diff,
+           :@stack_a => params[:stack_a],
+           :@stack_b => params[:stack_b],
+           :@item => Array(params[:item])
+    end
+
     get '/:stack/:item' do
       found = finder.find_item(
         stack: params[:stack], item: params[:item]
@@ -48,6 +61,10 @@ module Stackmeta
         store: Stackmeta::S3Store.new,
         extractor: Stackmeta::Extractor.new
       )
+    end
+
+    private def differ
+      @differ ||= Stackmeta::Differ.new(finder: finder)
     end
   end
 end

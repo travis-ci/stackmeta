@@ -15,6 +15,8 @@ module Stackmeta
         return 1
       end
 
+      return run_diff(argv) if argv.first == 'diff'
+
       stack = argv.shift
       stack_hash = finder.find(stack: stack)
       return 1 if stack_hash.nil?
@@ -33,13 +35,55 @@ module Stackmeta
       0
     end
 
+    private def run_diff(argv)
+      if argv.length < 3
+        $stdout.puts parser
+        return 2
+      end
+
+      argv.shift
+      stack_a = argv.shift
+      stack_b = argv.shift
+
+      diff = differ.diff_items(
+        items: Array(argv),
+        stack_a: stack_a,
+        stack_b: stack_b
+      )
+
+      $stdout.puts JSON.pretty_generate(diff: diff)
+      0
+    end
+
     private def parser
       require 'optparse'
+      prog = File.basename($PROGRAM_NAME)
       @parser ||= OptionParser.new do |opts|
         opts.banner = <<~EOF
-          Usage: #{File.basename($PROGRAM_NAME)} <stack> [item, item...]
+          Usage: #{prog} [diff] <stack> [stack] [item, item...]
 
-          Fetch stack summary or directly fetch stack item(s).
+          Fetch stack summary, directly fetch stack item(s), or diff arbitrary
+          items between stacks.
+
+
+          EXAMPLES:
+
+          Fetch stack summary:
+
+            #{prog} sugilite-trusty-1498161108
+
+          Fetch stack items:
+
+            #{prog} sugilite-trusty-1498161108 \\
+                    dpkg-manifest.json \\
+                    TRAVIS_UID
+
+          Diff stack items:
+
+            #{prog} diff \\
+                    sugilite-trusty-1480960799 \\
+                    sugilite-trusty-1498161108 \\
+                    dpkg-manifest.json
         EOF
       end
     end
@@ -51,6 +95,10 @@ module Stackmeta
         tarcache: Stackmeta::Tarcache.new,
         extractor: Stackmeta::Extractor.new
       )
+    end
+
+    private def differ
+      @differ ||= Stackmeta::Differ.new(finder: finder)
     end
   end
 end
