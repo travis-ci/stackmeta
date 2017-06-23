@@ -1,1 +1,1 @@
-web: bin/stackmeta-server
+web: bin/stackmeta-server --port "${PORT}"
