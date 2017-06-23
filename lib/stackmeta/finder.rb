@@ -4,30 +4,49 @@ require 'stackmeta'
 
 module Stackmeta
   class Finder
-    def initialize(url_func: nil)
-      @url_func = url_func || ->(s) { s }
+    def initialize(extractor: nil, store: nil, tarcache: nil, url_func: nil)
+      @extractor = extractor || Stackmeta::Extractor.new
+      @store = store || Stackmeta::S3Cache.new
+      @tarcache = tarcache || Stackmeta::Tarcache.new
+      @url_func = url_func || ->(_stack, item) { item }
     end
 
-    attr_reader :url_func
+    attr_reader :extractor, :store, :tarcache, :url_func
+    private :extractor
+    private :store
+    private :tarcache
     private :url_func
 
     def find(stack: '')
       return nil if stack.to_s.empty?
 
-      {
-        name: 'fake-stack',
-        items: {
-          'bin-lib.SHA256SUMS' => url_func.call(
-            '/fake-stack/bin-lib.SHA256SUMS'
-          )
-        }
-      }
+      summary = extractor.extract_summary(
+        tbz2_bytes: tarcache.lookup!(
+          url: store.fetch_tbz2_url(stack: stack)
+        )
+      )
+
+      return nil if summary.nil?
+
+      ret = { name: stack, items: {} }
+      summary.keys.each do |filename|
+        ret[:items][filename] = url_func.call(
+          stack, File.basename(filename)
+        )
+      end
+
+      ret
     end
 
     def find_item(stack: '', item: '')
       return nil if stack.to_s.empty? || item.to_s.empty?
 
-      'lol nah'
+      extractor.extract_item(
+        tbz2_bytes: tarcache.lookup!(
+          url: store.fetch_tbz2_url(stack: stack)
+        ),
+        item: item
+      )
     end
   end
 end

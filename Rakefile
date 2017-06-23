@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 begin
   require 'rubocop/rake_task'
   require 'rspec/core/rake_task'

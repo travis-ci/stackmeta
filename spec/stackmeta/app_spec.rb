@@ -1,6 +1,28 @@
 # frozen_string_literal: true
 
 describe Stackmeta::App do
+  before :each do
+    allow_any_instance_of(Stackmeta::Finder)
+      .to receive(:find).with(stack: 'wat').and_return(stack_summary)
+    allow_any_instance_of(Stackmeta::Finder)
+      .to receive(:find_item).with(stack: 'wat', item: 'thing')
+                             .and_return(thing_bytes)
+  end
+
+  let :stack_summary do
+    {
+      name: 'wat',
+      items: {
+        'thing' => 'wat/thang',
+        'lol' => 'wat/lol'
+      }
+    }
+  end
+
+  let :thing_bytes do
+    'spooooooOOOOOOookyyyyy'
+  end
+
   describe 'GET /' do
     it 'returns 200' do
       response = get '/'
