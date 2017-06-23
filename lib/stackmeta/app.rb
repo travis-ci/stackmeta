@@ -13,14 +13,9 @@ module Stackmeta
     BOOTED_AT = Time.now.utc
 
     get '/' do
-      [
-        200,
-        { 'Content-Type' => 'application/json' },
-        MultiJson.dump(
-          greeting: 'hello, human',
-          uptime: "#{uptime}s"
-        )
-      ]
+      status 200
+      json greeting: 'hello, human',
+           uptime: "#{uptime}s"
     end
 
     get '/:stack' do

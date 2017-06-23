@@ -8,4 +8,4 @@ end
 RuboCop::RakeTask.new if defined?(RuboCop)
 RSpec::Core::RakeTask.new if defined?(RSpec)
 
-task default: %i[spec rubocop]
+task default: %i[rubocop spec]

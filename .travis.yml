@@ -3,3 +3,6 @@ dist: trusty
 rvm: 2.4.1
 cache:
   bundler: true
+env:
+  global:
+  - COVERAGE=1

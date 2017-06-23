@@ -8,8 +8,10 @@ gem 'multi_json'
 gem 'pry'
 gem 'puma'
 gem 'rack'
+gem 'rack-test', group: :test
 gem 'rake'
-gem 'rspec'
-gem 'rubocop'
+gem 'rspec', group: :test
+gem 'rubocop', group: :test
+gem 'simplecov', group: :test
 gem 'sinatra'
 gem 'sinatra-contrib'
