@@ -24,14 +24,36 @@ module Stackmeta
       argv.each do |item|
         found = finder.find_item(stack: stack, item: item)
         next if found.nil?
-        stack_hash[:items][item] = Base64.strict_encode64(found)
+        stack_hash[:items][item] = found
       end
 
       stack_hash[:items].keys.each do |key|
         stack_hash[:items][key] = nil unless argv.include?(key)
       end
 
-      $stdout.puts JSON.pretty_generate(stack_hash)
+      hacked_md = ["# #{stack_hash[:name]}"]
+      stack_hash[:items].each do |filename, content|
+        if content.nil?
+          hacked_md << "- #{filename}"
+          next
+        end
+        hacked_md << "- [#{filename}](##{filename})"
+      end
+
+      hacked_md << ''
+
+      stack_hash[:items].each do |filename, content|
+        next if content.nil?
+        hacked_md << <<~EOF
+          ## #{filename}
+
+          \`\`\`
+          #{content}
+          \`\`\`
+        EOF
+      end
+
+      $stdout.puts hacked_md.join("\n")
       0
     end
 
@@ -51,7 +73,7 @@ module Stackmeta
         stack_b: stack_b
       )
 
-      $stdout.puts JSON.pretty_generate(diff: diff)
+      $stdout.puts diff.values.join("\n")
       0
     end
 
