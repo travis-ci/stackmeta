@@ -19,7 +19,6 @@ module Stackmeta
     end
 
     get '/:stack' do
-      halt 400 unless valid_stack?(params[:stack])
       found = finder.find(stack: params[:stack])
       halt 404 if found.nil?
       status 200
@@ -28,7 +27,6 @@ module Stackmeta
     end
 
     get '/:stack/:item' do
-      halt 400 unless valid_stack?(params[:stack])
       found = finder.find_item(
         stack: params[:stack], item: params[:item]
       )
@@ -42,12 +40,6 @@ module Stackmeta
 
     private def uptime
       Time.now.utc - BOOTED_AT
-    end
-
-    private def valid_stack?(stack)
-      return false if stack.strip.empty?
-      # TODO: regexp better
-      /.*/.match?(stack)
     end
 
     private def finder

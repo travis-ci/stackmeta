@@ -16,7 +16,8 @@ module Stackmeta
       end
 
       stack = argv.shift
-      stack_hash = finder.find(stack: stack) || {}
+      stack_hash = finder.find(stack: stack)
+      return 1 if stack_hash.nil?
 
       argv.each do |item|
         found = finder.find_item(stack: stack, item: item)

@@ -18,7 +18,7 @@ module Stackmeta
     private :url_func
 
     def find(stack: '')
-      return nil if stack.to_s.empty?
+      return nil unless valid_stack?(stack)
 
       summary = extractor.extract_summary(
         tbz2_bytes: tarcache.lookup!(
@@ -47,6 +47,18 @@ module Stackmeta
         ),
         item: item
       )
+    end
+
+    private def valid_stack?(stack)
+      return false if stack.to_s.strip.empty?
+      parts = stack.to_s.split('-')
+      return false if parts.length < 3
+      return false unless recent?(parts.last)
+      true
+    end
+
+    private def recent?(timestamp)
+      (Time.now.utc.to_i - timestamp.to_i).abs < 315_360_000 # 10 years
     end
   end
 end
