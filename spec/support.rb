@@ -6,6 +6,8 @@ require 'stackmeta'
 require 'rspec'
 require 'rack/test'
 
+ENV['STACKMETA_REDIS_RACK_CACHE'] = nil
+
 module RackTestBits
   include Rack::Test::Methods
 

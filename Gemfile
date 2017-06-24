@@ -11,10 +11,12 @@ gem 'multi_json'
 gem 'pry'
 gem 'puma'
 gem 'rack'
+gem 'rack-cache'
 gem 'rack-test', group: :test
 gem 'rake'
 gem 'redis'
 gem 'redis-namespace'
+gem 'redis-rack-cache'
 gem 'rspec', group: :test
 gem 'rubocop', group: :test
 gem 'simplecov', group: :test
