@@ -14,6 +14,13 @@ module Stackmeta
 
     register Sinatra::Contrib
 
+    before do
+      env['HTTP_ACCEPT'] = {
+        'text' => 'text/plain',
+        'json' => 'application/json'
+      }.fetch(params[:format], env['HTTP_ACCEPT'])
+    end
+
     get '/' do
       status 200
       json greeting: 'hello, human',
@@ -41,8 +48,10 @@ module Stackmeta
     end
 
     get '/diff/:stack_a/:stack_b' do
+      params[:item] = params[:item].to_s.split(',').map(&:strip)
+
       diff = differ.diff_items(
-        items: Array(params[:item]),
+        items: params[:item],
         stack_a: params[:stack_a],
         stack_b: params[:stack_b]
       )
@@ -52,7 +61,7 @@ module Stackmeta
           json diff: diff,
                :@stack_a => params[:stack_a],
                :@stack_b => params[:stack_b],
-               :@item => Array(params[:item])
+               :@item => params[:item]
         end
 
         f.txt do
