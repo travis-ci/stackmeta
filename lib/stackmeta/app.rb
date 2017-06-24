@@ -4,6 +4,7 @@ require 'base64'
 require 'digest/sha1'
 
 require 'multi_json'
+require 'rack/deflater'
 require 'sinatra/base'
 require 'sinatra/contrib'
 
@@ -30,6 +31,8 @@ module Stackmeta
               redis_url, '0/stackmeta:rack-cache:entitystore'
             )
       end
+
+      use Rack::Deflater
     end
 
     before do
