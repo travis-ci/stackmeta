@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'base64'
 require 'digest/sha1'
 
 require 'multi_json'
@@ -40,6 +39,11 @@ module Stackmeta
         'text' => 'text/plain',
         'json' => 'application/json'
       }.fetch(params[:format], env['HTTP_ACCEPT'])
+
+      cache_control :public, max_age: THIRTY_DAYS_IN_SECONDS
+      headers 'Vary' => 'Accept, Accept-Encoding'
+
+      params[:items] = to_string_array(params[:items])
     end
 
     get '/' do
@@ -53,7 +57,16 @@ module Stackmeta
       found = finder.find(stack: params[:stack])
       halt 404 if found.nil?
 
-      cache_control :public, max_age: THIRTY_DAYS_IN_SECONDS
+      Array(params[:items]).each do |item|
+        found_item = finder.find_item(
+          stack: params[:stack], item: item
+        )
+
+        next if found_item.nil?
+
+        found[:items_expanded] ||= {}
+        found[:items_expanded][item] = found_item
+      end
 
       respond_to do |f|
         f.json do
@@ -66,23 +79,40 @@ module Stackmeta
         f.txt do
           hacked_md = ["# #{found[:name]}"]
           found[:items].each do |filename, url|
+            if found.key?(:items_expanded) &&
+               found[:items_expanded].key?(filename)
+              hacked_md << "- [#{filename}](##{filename})"
+              next
+            end
             hacked_md << "- [#{filename}](#{url})"
           end
+
+          (found[:items_expanded] || {}).each do |filename, content|
+            if filename.match?(/\.json$/)
+              content = MultiJson.dump(MultiJson.load(content), pretty: true)
+            end
+
+            hacked_md << <<~EOF
+
+              ## #{filename}
+
+              \`\`\`
+              #{content}
+              \`\`\`
+            EOF
+          end
+
           body_with_etag(hacked_md.join("\n"))
         end
       end
     end
 
     get '/diff/:stack_a/:stack_b' do
-      params[:item] = params[:item].to_s.split(',').map(&:strip)
-
       diff = differ.diff_items(
-        items: params[:item],
+        items: params[:items],
         stack_a: params[:stack_a],
         stack_b: params[:stack_b]
       )
-
-      cache_control :public, max_age: THIRTY_DAYS_IN_SECONDS
 
       respond_to do |f|
         f.json do
@@ -90,35 +120,13 @@ module Stackmeta
                            diff: diff,
                            :@stack_a => params[:stack_a],
                            :@stack_b => params[:stack_b],
-                           :@item => params[:item]
+                           :@items => params[:items]
           ))
         end
 
         f.txt do
           body_with_etag(diff.values.join("\n"))
         end
-      end
-    end
-
-    get '/:stack/:item' do
-      found = finder.find_item(
-        stack: params[:stack], item: params[:item]
-      )
-      halt 404 if found.nil?
-
-      cache_control :public, max_age: THIRTY_DAYS_IN_SECONDS
-
-      respond_to do |f|
-        f.json do
-          body_with_etag(MultiJson.dump(
-                           item: Base64.strict_encode64(found),
-                           :@encoding => 'base64',
-                           :@requested_stack => params[:stack],
-                           :@requested_item => params[:item]
-          ))
-        end
-
-        f.txt { body_with_etag(found) }
       end
     end
 
@@ -141,6 +149,10 @@ module Stackmeta
     private def body_with_etag(str)
       Digest::SHA1.hexdigest(str)
       body str
+    end
+
+    private def to_string_array(str)
+      str.to_s.split(',').map(&:strip)
     end
   end
 end

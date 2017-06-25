@@ -64,24 +64,4 @@ describe Stackmeta::App do
       end
     end
   end
-
-  describe 'GET /:stack/:item' do
-    it 'returns 200' do
-      response = get '/wat/thing'
-      expect(response.status).to eq(200)
-    end
-
-    it 'responds with an item' do
-      response = get '/wat/thing'
-      body = MultiJson.load(response.body)
-      expect(body).to include('item')
-      expect(body['item']).to_not be_nil
-      expect(body).to include('@encoding')
-      expect(body['@encoding']).to eq('base64')
-      expect(body).to include('@requested_stack')
-      expect(body['@requested_stack']).to eq('wat')
-      expect(body).to include('@requested_item')
-      expect(body['@requested_item']).to eq('thing')
-    end
-  end
 end

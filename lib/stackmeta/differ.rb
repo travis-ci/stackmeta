@@ -75,7 +75,9 @@ module Stackmeta
       process.poll_for_exit(30)
       tmpout.close
 
-      <<~EOF + File.read(tmpout.path)
+      diff_body = File.read(tmpout.path)
+      return '' if diff_body.strip.empty?
+      <<~EOF + diff_body
         diff a/#{label} b/#{label}
         #{stack_a}..#{stack_b}
       EOF
