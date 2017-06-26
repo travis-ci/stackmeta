@@ -25,7 +25,7 @@ module Stackmeta
     cfg :urlcache_ttl, 3600, cast: ->(v) { Integer(v) }
 
     def env(subkey, default, cast: nil)
-      value = ENV["STACKMETA_#{subkey}"] || default
+      value = ENV["STACKMETA_#{subkey}"] || ENV[subkey] || default
       return cast.call(value) unless cast.nil?
       value
     end
