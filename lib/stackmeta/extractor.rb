@@ -60,7 +60,7 @@ module Stackmeta
     end
 
     private def tar
-      @tar ||= (ENV['STACKMETA_TAR'] || 'tar')
+      @tar ||= Stackmeta.config.tar
     end
   end
 end

@@ -42,13 +42,11 @@ module Stackmeta
     end
 
     private def ttl
-      @ttl ||= Integer(ENV['STACKMETA_URLCACHE_TTL'] || 3600)
+      @ttl ||= Stackmeta.config.urlcache_ttl
     end
 
     private def key_prefix
-      @key_prefix ||= begin
-        ENV['STACKMETA_KEY_PREFIX'] || 'travis-ci/packer-templates'
-      end
+      @key_prefix ||= Stackmeta.config.s3_store_key_prefix
     end
 
     private def bucket
@@ -56,7 +54,7 @@ module Stackmeta
     end
 
     private def bucket_name
-      @bucket_name ||= ENV['STACKMETA_BUCKET_NAME']
+      @bucket_name ||= Stackmeta.config.s3_store_bucket_name
     end
 
     private def s3

@@ -17,11 +17,11 @@ module Stackmeta
     register Sinatra::Contrib
 
     configure do
-      if ENV['STACKMETA_REDIS_RACK_CACHE']
+      if Stackmeta.config.redis_rack_cache?
         require 'rack/cache'
         require 'redis-rack-cache'
 
-        redis_url = ENV['REDIS_URL'] || 'redis://127.0.0.1:6379'
+        redis_url = Stackmeta.config.redis_url
         use Rack::Cache,
             metastore: File.join(
               redis_url, '0/stackmeta:rack-cache:metastore'
