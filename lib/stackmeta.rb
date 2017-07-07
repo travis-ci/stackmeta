@@ -5,6 +5,7 @@ module Stackmeta
   autoload :Cli, 'stackmeta/cli'
   autoload :Config, 'stackmeta/config'
   autoload :Differ, 'stackmeta/differ'
+  autoload :DpkgDiffer, 'stackmeta/dpkg_differ'
   autoload :Extractor, 'stackmeta/extractor'
   autoload :Finder, 'stackmeta/finder'
   autoload :S3Store, 'stackmeta/s3_store'
