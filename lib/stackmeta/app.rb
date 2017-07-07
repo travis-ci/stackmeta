@@ -37,7 +37,8 @@ module Stackmeta
     before do
       env['HTTP_ACCEPT'] = {
         'text' => 'text/plain',
-        'json' => 'application/json'
+        'json' => 'application/json',
+        'csv' => 'text/csv'
       }.fetch(params[:format], env['HTTP_ACCEPT'])
 
       cache_control :public, max_age: THIRTY_DAYS_IN_SECONDS
@@ -130,6 +131,41 @@ module Stackmeta
       end
     end
 
+    get '/dpkg-diff/:stack_a/:stack_b' do
+      respond_to do |f|
+        f.json do
+          body_with_etag(MultiJson.dump(
+                           diff: dpkg_differ.diff(
+                             stack_a: params[:stack_a],
+                             stack_b: params[:stack_b]
+                           ),
+                           :@stack_a => params[:stack_a],
+                           :@stack_b => params[:stack_b]
+          ))
+        end
+
+        f.txt do
+          body_with_etag(
+            dpkg_differ.markdown_diff(
+              stack_a: params[:stack_a],
+              stack_b: params[:stack_b],
+              updates_only: params[:u] == '1'
+            )
+          )
+        end
+
+        f.csv do
+          body_with_etag(
+            dpkg_differ.csv_diff(
+              stack_a: params[:stack_a],
+              stack_b: params[:stack_b],
+              updates_only: params[:u] == '1'
+            )
+          )
+        end
+      end
+    end
+
     private def uptime
       Time.now.utc - BOOTED_AT
     end
@@ -144,6 +180,10 @@ module Stackmeta
 
     private def differ
       @differ ||= Stackmeta::Differ.new(finder: finder)
+    end
+
+    private def dpkg_differ
+      @dpkg_differ ||= Stackmeta::DpkgDiffer.new(finder: finder)
     end
 
     private def body_with_etag(str)

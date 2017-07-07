@@ -16,6 +16,7 @@ module Stackmeta
       end
 
       return run_diff(argv) if argv.first == 'diff'
+      return run_dpkg_diff(argv) if argv.first == 'dpkg-diff'
 
       stack = argv.shift
       stack_hash = finder.find(stack: stack)
@@ -77,12 +78,29 @@ module Stackmeta
       0
     end
 
+    private def run_dpkg_diff(argv)
+      if argv.length < 3
+        $stdout.puts parser
+        return 2
+      end
+
+      argv.shift
+      stack_a = argv.shift
+      stack_b = argv.shift
+
+      $stdout.puts dpkg_differ.markdown_diff(
+        stack_a: stack_a,
+        stack_b: stack_b
+      )
+      0
+    end
+
     private def parser
       require 'optparse'
       prog = File.basename($PROGRAM_NAME)
       @parser ||= OptionParser.new do |opts|
         opts.banner = <<~EOF
-          Usage: #{prog} [diff] <stack> [stack] [item, item...]
+          Usage: #{prog} [diff|dpkg-diff] <stack> [stack] [item, item...]
 
           Fetch stack summary, directly fetch stack item(s), or diff arbitrary
           items between stacks.
@@ -121,6 +139,10 @@ module Stackmeta
 
     private def differ
       @differ ||= Stackmeta::Differ.new(finder: finder)
+    end
+
+    private def dpkg_differ
+      @dpkg_differ ||= Stackmeta::DpkgDiffer.new(finder: finder)
     end
   end
 end
