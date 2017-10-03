@@ -28,7 +28,10 @@ module Stackmeta
             ),
             entitystore: File.join(
               redis_url, '0/stackmeta:rack-cache:entitystore'
-            )
+            ),
+            cache_key: proc do |req|
+              [Rack::Cache::Key.call(req), Stackmeta.version].join('-')
+            end
       end
 
       use Rack::Deflater
