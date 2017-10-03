@@ -4,7 +4,7 @@ require 'stackmeta'
 
 module Stackmeta
   class Finder
-    TIMESTAMP_INDEX = 2
+    TIMESTAMP_INDEX = 4
     private_constant :TIMESTAMP_INDEX
 
     def initialize(extractor: nil, store: nil, tarcache: nil, url_func: nil)
