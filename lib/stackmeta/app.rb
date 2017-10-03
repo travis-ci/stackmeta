@@ -172,7 +172,7 @@ module Stackmeta
 
     private def finder
       @finder ||= Stackmeta::Finder.new(
-        url_func: ->(stack, item) { url("#{stack}/#{item}") },
+        url_func: ->(stack, item) { url("#{stack}?items=#{item}") },
         store: Stackmeta::S3Store.new,
         extractor: Stackmeta::Extractor.new
       )
