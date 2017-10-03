@@ -21,6 +21,9 @@ module Stackmeta
         require 'rack/cache'
         require 'redis-rack-cache'
 
+        generate_cache_key = proc do |req|
+          [Rack::Cache::Key.call(req), Stackmeta.version].join('-')
+        end
         redis_url = Stackmeta.config.redis_url
         use Rack::Cache,
             metastore: File.join(
@@ -29,9 +32,7 @@ module Stackmeta
             entitystore: File.join(
               redis_url, '0/stackmeta:rack-cache:entitystore'
             ),
-            cache_key: proc do |req|
-              [Rack::Cache::Key.call(req), Stackmeta.version].join('-')
-            end
+            cache_key: generate_cache_key
       end
 
       use Rack::Deflater
