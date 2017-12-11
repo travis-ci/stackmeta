@@ -16,4 +16,11 @@ module Stackmeta
   end
 
   module_function :config
+
+  def version
+    @version ||=
+      `git rev-parse HEAD 2>/dev/null || echo ${SOURCE_VERSION:-fafafaf}`.strip
+  end
+
+  module_function :version
 end

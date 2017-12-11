@@ -4,6 +4,9 @@ require 'stackmeta'
 
 module Stackmeta
   class Finder
+    TIMESTAMP_INDEX = 4
+    private_constant :TIMESTAMP_INDEX
+
     def initialize(extractor: nil, store: nil, tarcache: nil, url_func: nil)
       @extractor = extractor || Stackmeta::Extractor.new
       @store = store || Stackmeta::S3Cache.new
@@ -53,7 +56,7 @@ module Stackmeta
       return false if stack.to_s.strip.empty?
       parts = stack.to_s.split('-')
       return false if parts.length < 3
-      return false unless recent?(parts.last)
+      return false unless recent?(parts[TIMESTAMP_INDEX])
       true
     end
 
