@@ -191,7 +191,7 @@ module Stackmeta
     end
 
     private def body_with_etag(str)
-      Digest::SHA1.hexdigest(str)
+      etag Digest::SHA1.hexdigest(str), :weak
       body str
     end
 
